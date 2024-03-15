@@ -1,4 +1,4 @@
-# IndicTransTokenizer
+# IndicTransTokenizer FastAPI Layer
 
 The goal of this repository is to provide a simple, modular, and extendable tokenizer for [IndicTrans2](https://github.com/AI4Bharat/IndicTrans2) and be compatible with the HuggingFace models released. 
 
@@ -52,6 +52,7 @@ For using the tokenizer to train/fine-tune the model, just set the `inference` a
  - Jay Gala (jaygala24@gmail.com)
  - Pranjal Agadh Chitale (pranjalchitale@gmail.com)
  - Raj Dabre (prajdabre@gmail.com)
+ - Ankit Srivastava (ankitsrivastava858@gmail.com)
 
 
 ## Bugs and Contribution
