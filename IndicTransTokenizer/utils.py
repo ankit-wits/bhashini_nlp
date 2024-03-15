@@ -289,8 +289,8 @@ class IndicProcessor:
                 if pattern == self._NUMERAL_PATTERN:
                     # Short numeral patterns do not need placeholder based handling.
                     if (
-                        len(match.replace(" ", "").replace(".", "").replace(":", ""))
-                        < 4
+                            len(match.replace(" ", "").replace(".", "").replace(":", ""))
+                            < 4
                     ):
                         continue
 
@@ -320,8 +320,8 @@ class IndicProcessor:
         return text
 
     def _normalize(
-        self,
-        text: str,
+            self,
+            text: str,
     ) -> Tuple[str, dict]:
         """
         Normalizes and wraps the spans of input string with placeholder tags. It first normalizes
@@ -350,7 +350,7 @@ class IndicProcessor:
         return text
 
     def _apply_lang_tags(
-        self, sents: List[str], src_lang: str, tgt_lang: str, delimiter=" "
+            self, sents: List[str], src_lang: str, tgt_lang: str, delimiter=" "
     ) -> List[str]:
         """
         Add special tokens indicating source and target language to the start of the each input sentence.
@@ -367,10 +367,10 @@ class IndicProcessor:
         return [f"{src_lang}{delimiter}{tgt_lang}{delimiter}{x.strip()}" for x in sents]
 
     def _preprocess(
-        self,
-        sent: str,
-        lang: str,
-        normalizer: Union[MosesPunctNormalizer, IndicNormalizerFactory],
+            self,
+            sent: str,
+            lang: str,
+            normalizer: Union[MosesPunctNormalizer, IndicNormalizerFactory],
     ) -> str:
         """
         Preprocess an input text sentence by normalizing, tokenization, and possibly transliterating it.
@@ -420,7 +420,7 @@ class IndicProcessor:
         return processed_sent
 
     def preprocess_batch(
-        self, batch: List[str], src_lang: str, tgt_lang: str, is_target: bool = False
+            self, batch: List[str], src_lang: str, tgt_lang: str, is_target: bool = False
     ) -> List[str]:
         """
         Preprocess an array of sentences by normalizing, tokenization, and possibly transliterating it. It also tokenizes the
@@ -456,10 +456,10 @@ class IndicProcessor:
         return tagged_sents
 
     def _postprocess(
-        self,
-        sent: str,
-        placeholder_entity_map: dict,
-        lang: str = "hin_Deva",
+            self,
+            sent: str,
+            placeholder_entity_map: dict,
+            lang: str = "hin_Deva",
     ):
         """
         Postprocesses a single input sentence after the translation generation.
@@ -501,9 +501,9 @@ class IndicProcessor:
         )
 
     def postprocess_batch(
-        self,
-        sents: List[str],
-        lang: str = "hin_Deva",
+            self,
+            sents: List[str],
+            lang: str = "hin_Deva",
     ) -> List[str]:
         """
         Postprocesses a batch of input sentences after the translation generations.
