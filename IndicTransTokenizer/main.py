@@ -6,6 +6,9 @@ from IndicTransTokenizer import IndicProcessor, IndicTransTokenizer
 
 app = FastAPI()
 
+# Define dictionaries to store model instances
+model_instances = {}
+
 
 class TranslationRequest(BaseModel):
     strings: list[str] = ["Hello, how are you?"]
@@ -14,7 +17,17 @@ class TranslationRequest(BaseModel):
     direction: str = "en-indic"
 
 
-# eng_Latn, ben_Beng
+@app.on_event("startup")
+async def startup_event():
+    global model_instances
+    directions = ["en-indic", "indic-en"]
+    for direction in directions:
+        tokenizer = IndicTransTokenizer(direction=direction)
+        ip = IndicProcessor(inference=True)
+        model = AutoModelForSeq2SeqLM.from_pretrained(f"ai4bharat/indictrans2-{direction}-dist-200M",
+                                                      trust_remote_code=True)
+        model_instances[direction] = (tokenizer, ip, model)
+
 
 @app.get("/")
 async def application():
@@ -43,14 +56,17 @@ async def language_codes():
 
 @app.post("/translate/")
 async def translate_strings(request: TranslationRequest):
-    try:
-        tokenizer = IndicTransTokenizer(direction=request.direction)
-        ip = IndicProcessor(inference=True)
-        model = AutoModelForSeq2SeqLM.from_pretrained(f"ai4bharat/indictrans2-{request.direction}-dist-200M",
-                                                      trust_remote_code=True)
+    global model_instances
 
-        batch = ip.preprocess_batch(request.strings, src_lang=request.source_lang, tgt_lang=request.target_lang)
-        batch = tokenizer(batch, src=True, return_tensors="pt")
+    try:
+        tokenizer, ip, model = model_instances.get(request.direction, (None, None, None))
+        if not tokenizer or not ip or not model:
+            raise HTTPException(status_code=400, detail="Invalid translation direction")
+
+        batch = request.strings
+        if ip and tokenizer:
+            batch = ip.preprocess_batch(request.strings, src_lang=request.source_lang, tgt_lang=request.target_lang)
+            batch = tokenizer(batch, src=True, return_tensors="pt")
 
         with torch.inference_mode():
             outputs = model.generate(**batch, num_beams=5, num_return_sequences=1, max_length=256)
