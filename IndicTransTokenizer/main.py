@@ -3,8 +3,11 @@ from pydantic import BaseModel
 import torch
 from transformers import AutoModelForSeq2SeqLM
 from IndicTransTokenizer import IndicProcessor, IndicTransTokenizer
+import os
 
 app = FastAPI()
+
+MODEL_DIR = "models"
 
 # Define dictionaries to store model instances
 model_instances = {}
@@ -17,16 +20,31 @@ class TranslationRequest(BaseModel):
     direction: str = "en-indic"
 
 
+# Define the directory to store the models
+MODEL_DIR = "models"
+
+
+# Modify the startup_event function to check for existing models and load them if available
 @app.on_event("startup")
 async def startup_event():
     global model_instances
     directions = ["en-indic", "indic-en"]
     for direction in directions:
-        tokenizer = IndicTransTokenizer(direction=direction)
-        ip = IndicProcessor(inference=True)
-        model = AutoModelForSeq2SeqLM.from_pretrained(f"ai4bharat/indictrans2-{direction}-dist-200M",
-                                                      trust_remote_code=True)
-        model_instances[direction] = (tokenizer, ip, model)
+        model_path = os.path.join(MODEL_DIR, f"{direction}_model.pt")
+        if os.path.exists(model_path):
+            tokenizer = IndicTransTokenizer(direction=direction)
+            ip = IndicProcessor(inference=True)
+            model = torch.load(model_path)
+            model_instances[direction] = (tokenizer, ip, model)
+        else:
+            tokenizer = IndicTransTokenizer(direction=direction)
+            ip = IndicProcessor(inference=True)
+            model = AutoModelForSeq2SeqLM.from_pretrained(f"ai4bharat/indictrans2-{direction}-dist-200M",
+                                                          trust_remote_code=True)
+            model_instances[direction] = (tokenizer, ip, model)
+            # Save the model locally
+            os.makedirs(MODEL_DIR, exist_ok=True)
+            torch.save(model, model_path)
 
 
 @app.get("/")
